@@ -1,0 +1,18 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+
+# Database
+backend/qdrant_db/
+app/qdrant_db_benchmark/
+*.lock
+
+# Node
+frontend/node_modules/
+frontend/.next/
+
+# Environment
+.env
+backend/.env
+frontend/.env.local
