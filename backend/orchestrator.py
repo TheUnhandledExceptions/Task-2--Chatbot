@@ -25,7 +25,10 @@ class RAGOrchestrator:
             print("WARNING: GROQ_API_KEY not set!")
             
         print("Loading local embedding model...")
-        self.embed_model = TextEmbedding(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+        self.embed_model = TextEmbedding(
+            model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            cache_dir=os.path.join(os.path.dirname(__file__), ".fastembed_cache")
+        )
         self.qdrant_client = QdrantClient(path="./qdrant_db")
         self.collection_name = "msmarco_xi_indic"
         self.http_client = httpx.AsyncClient(timeout=10.0)
