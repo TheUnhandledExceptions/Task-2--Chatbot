@@ -14,7 +14,11 @@ export default function Home() {
   const fetchAnalytics = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/analytics`);
+      const res = await fetch(`${apiUrl}/analytics`, {
+        headers: {
+          "Bypass-Tunnel-Reminder": "true"
+        }
+      });
       if (res.ok) {
         setAnalytics(await res.json());
       }
@@ -72,6 +76,9 @@ export default function Home() {
       const response = await fetch(`${apiUrl}/query`, {
         method: "POST",
         body: formData,
+        headers: {
+          "Bypass-Tunnel-Reminder": "true"
+        }
       });
       const data = await response.json();
       setResult(data);
