@@ -13,7 +13,8 @@ export default function Home() {
 
   const fetchAnalytics = async () => {
     try {
-      const res = await fetch("https://srg4545-task-2-voice-rag.hf.space/analytics");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/analytics`);
       if (res.ok) {
         setAnalytics(await res.json());
       }
@@ -67,7 +68,8 @@ export default function Home() {
     formData.append("file", audioBlob, "query.webm");
 
     try {
-      const response = await fetch("https://srg4545-task-2-voice-rag.hf.space/query", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/query`, {
         method: "POST",
         body: formData,
       });
