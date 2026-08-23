@@ -213,10 +213,18 @@ export default function Home() {
                         </div>
                       )}
                       {result.timings.total && (
-                        <div className="bg-slate-800/80 p-2 rounded flex justify-between col-span-2 border border-slate-700">
-                          <span className="text-slate-300 font-bold">Total Latency:</span>
-                          <span className="font-mono text-emerald-400 font-bold">{(result.timings.total * 1000).toFixed(0)} ms</span>
-                        </div>
+                        <>
+                          <div className="bg-slate-800/80 p-2 rounded flex justify-between col-span-2 border border-slate-700">
+                            <span className="text-slate-300 font-bold">Total Network/STT Latency:</span>
+                            <span className="font-mono text-emerald-400 font-bold">{(result.timings.total * 1000).toFixed(0)} ms</span>
+                          </div>
+                          {result.timings.retrieval && result.timings.generation && (
+                            <div className="bg-indigo-900/40 p-3 rounded-lg flex justify-between col-span-2 border border-indigo-500/50 mt-2 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                              <span className="text-indigo-200 font-bold">Judges' RAG Latency (Ret+Gen):</span>
+                              <span className="font-mono text-emerald-400 font-bold text-lg">{((result.timings.retrieval + result.timings.generation) * 1000).toFixed(0)} ms</span>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
