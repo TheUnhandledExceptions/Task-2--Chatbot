@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 qdrant-client
-sentence-transformers
+fastembed
 groq
 python-dotenv
 datasets
@@ -12,4 +12,3 @@ python-multipart
 tenacity
 httpx
 gradio
-spaces
