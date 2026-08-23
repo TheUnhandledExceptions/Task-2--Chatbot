@@ -1,6 +1,6 @@
 import time
 import os
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 from qdrant_client import QdrantClient
 
 class SearchResponse:
@@ -15,7 +15,7 @@ qdrant_client = None
 def warmup():
     global model, qdrant_client
     if model is None:
-        model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+        model = TextEmbedding(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
     if qdrant_client is None:
         import shutil
         src_db = os.path.join(os.path.dirname(__file__), "..", "backend", "qdrant_db")
@@ -33,14 +33,14 @@ def warmup():
         qdrant_client = QdrantClient(path=benchmark_db)
     
     # Warmup inference
-    model.encode("warmup")
+    list(model.embed(["warmup"]))
     qdrant_client.query_points(collection_name="msmarco_xi_indic", query=[0.0]*384, limit=1)
 
 def search(query: str, top_k: int = 5) -> SearchResponse:
     start_total = time.time()
     
     start_embed = time.time()
-    query_vector = model.encode(query).tolist()
+    query_vector = list(model.embed([query]))[0].tolist()
     embed_ms = (time.time() - start_embed) * 1000
     
     start_search = time.time()

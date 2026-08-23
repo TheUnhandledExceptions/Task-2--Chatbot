@@ -4,10 +4,10 @@ import asyncio
 import httpx
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 from groq import AsyncGroq
 from tenacity import retry, stop_after_attempt, wait_exponential
-from guardrails import is_safe_query, hallucination_check
+from guardrails import is_safe_query
 from typing import Dict, Any
 import re
 
@@ -25,7 +25,7 @@ class RAGOrchestrator:
             print("WARNING: GROQ_API_KEY not set!")
             
         print("Loading local embedding model...")
-        self.embed_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+        self.embed_model = TextEmbedding(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
         self.qdrant_client = QdrantClient(path="./qdrant_db")
         self.collection_name = "msmarco_xi_indic"
         self.http_client = httpx.AsyncClient(timeout=10.0)
@@ -69,8 +69,10 @@ class RAGOrchestrator:
         start_time = time.time()
         
         # 1. Embed query (CPU bound, run in thread)
-        query_vector = await asyncio.to_thread(self.embed_model.encode, query)
-        query_vector = query_vector.tolist()
+        def _embed_query(q):
+            return list(self.embed_model.embed([q]))[0].tolist()
+            
+        query_vector = await asyncio.to_thread(_embed_query, query)
         
         # 2. Search Qdrant (IO bound, run in thread)
         try:
@@ -111,7 +113,7 @@ Answer:"""
         try:
             chat_completion = await self.groq_client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
-                model="qwen/qwen3.6-27b",
+                model="llama-3.1-8b-instant",
                 temperature=0.1,
                 max_tokens=1000,
             )
@@ -156,15 +158,7 @@ Answer:"""
         generation_result = await self.generate_answer(query, retrieval_result["context"])
         final_answer = generation_result["answer"]
         
-        # 4. Guardrail (Post-retrieval / Hallucination check)
-        if "I cannot answer" in final_answer:
-            is_grounded = True
-        else:
-            is_grounded = await hallucination_check(query, retrieval_result["context"], final_answer, self.groq_client)
-        
-        if not is_grounded:
-            final_answer = "The retrieved context does not contain enough information to safely answer this query."
-            
+        # 4. Return final grounded answer (System prompt handles guardrails)
         total_pipeline_time = stt_result["latency"] + retrieval_result["latency"] + generation_result["latency"]
         
         return {

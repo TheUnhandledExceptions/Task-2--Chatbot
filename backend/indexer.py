@@ -1,16 +1,16 @@
 import os
 import json
 from datasets import load_dataset
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
 from chunking import AdvancedChunker
 
 # Load Multilingual Embedding Model
 # We use multilingual because MSMARCO-XI contains Indic languages
-model_name = 'paraphrase-multilingual-MiniLM-L12-v2'
+model_name = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
 print(f"Loading embedding model: {model_name}")
-model = SentenceTransformer(model_name)
+model = TextEmbedding(model_name=model_name)
 
 # Initialize Qdrant client (local disk storage)
 qdrant_path = "./qdrant_db"
@@ -26,7 +26,7 @@ except Exception:
     print(f"Creating collection {collection_name}...")
     client.create_collection(
         collection_name=collection_name,
-        vectors_config=VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
+        vectors_config=VectorParams(size=384, distance=Distance.COSINE),
     )
 
 def index_dataset(subset_size=1000, lang="hi"):
@@ -70,7 +70,7 @@ def index_dataset(subset_size=1000, lang="hi"):
             chunk_metadata = c["metadata"]
             
             # Create embedding
-            embedding = model.encode(chunk_text).tolist()
+            embedding = list(model.embed([chunk_text]))[0].tolist()
             
             points.append(
                 PointStruct(
