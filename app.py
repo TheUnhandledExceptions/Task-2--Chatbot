@@ -16,7 +16,4 @@ demo = gr.Interface(fn=dummy, inputs=None, outputs="text")
 # Mount the FastAPI app onto the Gradio interface
 app = gr.mount_gradio_app(fastapi_app, demo, path="/ui")
 
-if __name__ == "__main__":
-    import uvicorn
-    # Hugging Face Spaces expects the app to bind to port 7860
-    uvicorn.run(app, host="0.0.0.0", port=7860)
+# Hugging Face Spaces automatically runs the `app` ASGI instance, no need for manual uvicorn.run()
