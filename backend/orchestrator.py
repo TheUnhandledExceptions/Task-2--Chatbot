@@ -115,7 +115,7 @@ Answer:"""
         try:
             chat_completion = await self.groq_client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
-                model="llama-3.1-8b-instant",
+                model="qwen/qwen3.6-27b",
                 temperature=0.1,
                 max_tokens=1000,
             )
