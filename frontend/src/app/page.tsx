@@ -13,7 +13,7 @@ export default function Home() {
 
   const fetchAnalytics = async () => {
     try {
-      const res = await fetch("http://localhost:8000/analytics");
+      const res = await fetch("https://srg4545-task-2-voice-rag.hf.space/analytics");
       if (res.ok) {
         setAnalytics(await res.json());
       }
@@ -67,7 +67,7 @@ export default function Home() {
     formData.append("file", audioBlob, "query.webm");
 
     try {
-      const response = await fetch("http://localhost:8000/query", {
+      const response = await fetch("https://srg4545-task-2-voice-rag.hf.space/query", {
         method: "POST",
         body: formData,
       });
