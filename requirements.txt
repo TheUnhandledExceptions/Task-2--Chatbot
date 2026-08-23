@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+qdrant-client
+sentence-transformers
+groq
+python-dotenv
+datasets
+pandas
+pydantic
+requests
+python-multipart
+tenacity
+httpx
+gradio
+spaces
