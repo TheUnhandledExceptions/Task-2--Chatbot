@@ -26,7 +26,8 @@ class RAGOrchestrator:
             
         print("Loading local embedding model...")
         self.embed_model = TextEmbedding(
-            model_name="BAAI/bge-small-en-v1.5"
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            providers=["CPUExecutionProvider"]
         )
         self.qdrant_client = QdrantClient(path="./qdrant_db")
         self.collection_name = "msmarco_xi_indic"
@@ -71,18 +72,14 @@ class RAGOrchestrator:
         start_time = time.time()
         
         # 1. Embed query (CPU bound, run in thread)
-        def _embed_query(q):
-            return list(self.embed_model.embed([q]))[0].tolist()
-            
-        query_vector = await asyncio.to_thread(_embed_query, query)
+        query_vector = list(self.embed_model.embed([query]))[0].tolist()
         
-        # 2. Search Qdrant (IO bound, run in thread)
+        # 2. Search Qdrant (IO bound, run synchronously)
         try:
-            search_result = await asyncio.to_thread(
-                self.qdrant_client.query_points,
+            search_result = self.qdrant_client.query_points(
                 collection_name=self.collection_name,
                 query=query_vector,
-                limit=3
+                limit=1
             )
             contexts = [hit.payload["text"] for hit in search_result.points]
             retrieved_text = "\n\n".join(contexts)
@@ -97,16 +94,7 @@ class RAGOrchestrator:
     async def generate_answer(self, query: str, context: str) -> Dict[str, Any]:
         start_time = time.time()
         
-        prompt = f"""You are a helpful AI assistant. Answer the query using ONLY the provided context.
-If the context does not contain the answer, output exactly: "I cannot answer based on the provided context."
-Keep the answer concise and direct.
-
-Context:
-{context}
-
-Query: {query}
-
-Answer:"""
+        prompt = f"Use this context to answer concisely:\n{context}\n\nQuery:{query}\nAnswer:"
         
         if not self.groq_client:
             await asyncio.sleep(0.1)
@@ -115,9 +103,9 @@ Answer:"""
         try:
             chat_completion = await self.groq_client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
-                model="qwen/qwen3.6-27b",
-                temperature=0.1,
-                max_tokens=1000,
+                model="allam-2-7b",
+                temperature=0.0,
+                max_tokens=30,
             )
             answer = chat_completion.choices[0].message.content
             

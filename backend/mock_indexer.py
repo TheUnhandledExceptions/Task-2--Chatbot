@@ -4,9 +4,9 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
 from chunking import AdvancedChunker
 
-model_name = 'BAAI/bge-small-en-v1.5'
+model_name = 'sentence-transformers/all-MiniLM-L6-v2'
 print(f"Loading embedding model: {model_name}")
-model = TextEmbedding(model_name=model_name)
+model = TextEmbedding(model_name=model_name, providers=["CPUExecutionProvider"])
 
 qdrant_path = "./qdrant_db"
 client = QdrantClient(path=qdrant_path)
