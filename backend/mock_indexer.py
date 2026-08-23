@@ -1,12 +1,12 @@
 import os
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
 from chunking import AdvancedChunker
 
-model_name = 'paraphrase-multilingual-MiniLM-L12-v2'
+model_name = 'BAAI/bge-small-en-v1.5'
 print(f"Loading embedding model: {model_name}")
-model = SentenceTransformer(model_name)
+model = TextEmbedding(model_name=model_name)
 
 qdrant_path = "./qdrant_db"
 client = QdrantClient(path=qdrant_path)
@@ -19,7 +19,7 @@ except Exception:
     print(f"Creating collection {collection_name}...")
     client.create_collection(
         collection_name=collection_name,
-        vectors_config=VectorParams(size=model.get_sentence_embedding_dimension(), distance=Distance.COSINE),
+        vectors_config=VectorParams(size=384, distance=Distance.COSINE),
     )
 
 def index_mock_data():
@@ -45,7 +45,7 @@ def index_mock_data():
         for c in chunks:
             chunk_text = c["text"]
             chunk_metadata = c["metadata"]
-            embedding = model.encode(chunk_text).tolist()
+            embedding = list(model.embed([chunk_text]))[0].tolist()
             
             points.append(
                 PointStruct(

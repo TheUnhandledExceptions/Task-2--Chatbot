@@ -26,8 +26,7 @@ class RAGOrchestrator:
             
         print("Loading local embedding model...")
         self.embed_model = TextEmbedding(
-            model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-            cache_dir=os.path.join(os.path.dirname(__file__), ".fastembed_cache")
+            model_name="BAAI/bge-small-en-v1.5"
         )
         self.qdrant_client = QdrantClient(path="./qdrant_db")
         self.collection_name = "msmarco_xi_indic"
