@@ -32,29 +32,21 @@ def index_mock_data():
         "HackerHouse Goa is a great place to build cool AI projects."
     ]
     
-    from chunking import SemanticChunker, MetadataAwareChunker
-    base_chunker = SemanticChunker(model=model, max_chunk_size=400, similarity_threshold=0.5)
-    chunker = MetadataAwareChunker(base_chunker)
     points = []
     point_id = 0
-    
     for i, text in enumerate(dummy_texts):
         metadata = {"id": str(i), "lang": "en", "original_query": ""}
-        chunks = chunker.chunk(text, metadata)
         
-        for c in chunks:
-            chunk_text = c["text"]
-            chunk_metadata = c["metadata"]
-            embedding = list(model.embed([chunk_text]))[0].tolist()
-            
-            points.append(
-                PointStruct(
-                    id=point_id,
-                    vector=embedding,
-                    payload={"text": chunk_text, **chunk_metadata}
-                )
+        embedding = list(model.embed([text]))[0].tolist()
+        
+        points.append(
+            PointStruct(
+                id=point_id,
+                vector=embedding,
+                payload={"text": text, **metadata}
             )
-            point_id += 1
+        )
+        point_id += 1
             
     client.upsert(collection_name=collection_name, points=points)
     print("Mock indexing complete.")
