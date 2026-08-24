@@ -94,8 +94,14 @@ class RAGOrchestrator:
     async def generate_answer(self, query: str, context: str) -> Dict[str, Any]:
         start_time = time.time()
         
-        prompt = f"Use this context to answer concisely:\n{context}\n\nQuery:{query}\nAnswer:"
-        
+        prompt = f"""You are a strict QA assistant. You MUST answer the user's query ONLY using the provided context.
+If the context does not contain the information needed to answer the query, you MUST output exactly: "I cannot answer this based on the provided context." Do NOT use your general knowledge.
+
+Context:
+{context}
+
+Query: {query}
+Answer:"""
         if not self.groq_client:
             await asyncio.sleep(0.1)
             return {"answer": "Mock generated answer based on context.", "latency": 0.1}
